@@ -67,9 +67,11 @@ function App(): React.JSX.Element {
     ws.current.onmessage = e => {
       try {
         const data = JSON.parse(e.data);
-        setCounter(currentCounter => ++currentCounter);
         if (data.jumlah_data !== undefined) {
-          showNotification(`${data.jumlah_data}`);
+          setCounter(prevState => {
+            showNotification(`${data.jumlah_data}`, prevState + 1);
+            return prevState + 1;
+          });
         }
       } catch (error: any) {
         console.error('Failed to parse message: ', error);
@@ -86,14 +88,14 @@ function App(): React.JSX.Element {
     console.log('WebSocket Disconnected');
   };
 
-  const showNotification = async (message: string) => {
+  const showNotification = async (message: string, newcounter: number) => {
     const channelId = await notifee.createChannel({
       id: 'ws_channel',
       name: 'ws channel',
     });
 
     await notifee.displayNotification({
-      title: `Notifikasi ke - ${counter}`,
+      title: `Notifikasi ke - ${newcounter}`,
       body: `MESSAGE SOCKET : ${message}`,
       android: {
         channelId,

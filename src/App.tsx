@@ -6,7 +6,7 @@ import notifee, {AuthorizationStatus} from '@notifee/react-native';
 function App(): React.JSX.Element {
   const [hasPermission, setHasPermission] = useState<boolean>(false);
   const [isWsConnected, setWsConnected] = useState<boolean>(false);
-  const [counter, setCounter] = useState<number>(0);
+  const counter = useRef<number>(0);
   const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -67,11 +67,9 @@ function App(): React.JSX.Element {
     ws.current.onmessage = e => {
       try {
         const data = JSON.parse(e.data);
+        counter.current = counter.current + 1;
         if (data.jumlah_data !== undefined) {
-          setCounter(prevState => {
-            showNotification(`${data.jumlah_data}`, prevState + 1);
-            return prevState + 1;
-          });
+          showNotification(`${data.jumlah_data}`, counter.current);
         }
       } catch (error: any) {
         console.error('Failed to parse message: ', error);

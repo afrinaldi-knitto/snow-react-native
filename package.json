@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "@notifee/react-native": "^9.1.8",
+    "@react-native-firebase/app": "^21.6.1",
+    "@react-native-firebase/messaging": "^21.6.1",
+    "add": "^2.0.6",
     "react": "18.3.1",
     "react-native": "0.76.5",
     "react-native-notifications": "^5.1.0",

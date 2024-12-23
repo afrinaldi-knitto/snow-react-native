@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
+import messaging from '@react-native-firebase/messaging';
 import notifee, {AuthorizationStatus} from '@notifee/react-native';
 
 function App(): React.JSX.Element {
@@ -10,9 +11,18 @@ function App(): React.JSX.Element {
   const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
+    checkToken();
     checkHasPermission();
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      if (remoteMessage.notification?.title === undefined) {
+        return;
+      }
+      counter.current = counter.current + 1;
+      showNotification(remoteMessage.notification?.title, counter.current);
+    });
 
     return () => {
+      unsubscribe;
       if (ws.current) {
         ws.current.close();
       }
@@ -28,6 +38,13 @@ function App(): React.JSX.Element {
     } else {
       console.log('Notification permissions are not authorized');
       setHasPermission(false);
+    }
+  };
+
+  const checkToken = async () => {
+    const fcmToken = await messaging().getToken();
+    if (fcmToken) {
+      console.log(fcmToken);
     }
   };
 

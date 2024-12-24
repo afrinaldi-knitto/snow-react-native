@@ -69,7 +69,7 @@ function App(): React.JSX.Element {
           <Text style={styles.text}>Izinkan Notifikasi</Text>
         </TouchableOpacity>
       ) : (
-        <Text>Waching</Text>
+        <Text style={{color: '#fff'}}>Waching</Text>
       )}
     </View>
   );

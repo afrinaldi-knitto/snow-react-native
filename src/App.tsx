@@ -1,94 +1,43 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
 import messaging from '@react-native-firebase/messaging';
-import notifee, {AuthorizationStatus, EventType} from '@notifee/react-native';
+import notifee, {AuthorizationStatus} from '@notifee/react-native';
+import {showNotification} from './utils/notificationUtils';
 
 function App(): React.JSX.Element {
   const [hasPermission, setHasPermission] = useState<boolean>(false);
-  const [isWsConnected, setWsConnected] = useState<boolean>(false);
-  const counter = useRef<number>(0);
-  const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    checkToken();
     checkHasPermission();
-    const unsubscribeFCM = messaging().onMessage(async remoteMessage => {
+    subscribeToTopic();
+
+    const unSubscribeMessage = messaging().onMessage(async remoteMessage => {
       if (remoteMessage.notification?.title === undefined) {
         return;
       }
-      counter.current = counter.current + 1;
-      showNotification(remoteMessage.notification?.title, counter.current);
+
+      try {
+        showNotification(
+          remoteMessage.notification?.title || '',
+          remoteMessage.notification?.body || '',
+        );
+      } catch (error) {
+        console.log(`has error foreground notification : ${error}`);
+      }
     });
 
-    const unsubscribeEvent = notifee.onForegroundEvent(
-      async ({type, detail}) => {
-        const {notification} = detail;
-
-        if (notification === undefined) {
-          return;
-        }
-
-        switch (type) {
-          case EventType.UNKNOWN:
-            console.log(`Foreground Unknown event: ${notification}`);
-            break;
-          case EventType.PRESS:
-            console.log(
-              `Foreground User pressed notification: ${notification}`,
-            );
-            break;
-          case EventType.DISMISSED:
-            console.log(
-              `Foreground User dismissed notification: ${notification}`,
-            );
-            break;
-          case EventType.ACTION_PRESS:
-            console.log(`Foreground User pressed action: ${notification}`);
-            break;
-          case EventType.DELIVERED:
-            console.log(
-              `Foreground User delivered notification: ${notification.title}`,
-            );
-            break;
-          case EventType.APP_BLOCKED:
-            console.log(
-              `Foreground User blocked notification: ${notification.title}`,
-            );
-            break;
-          case EventType.CHANNEL_GROUP_BLOCKED:
-            console.log(
-              `Foreground User blocked channel group: ${notification.title}`,
-            );
-            break;
-          case EventType.CHANNEL_BLOCKED:
-            console.log(
-              `Foreground User blocked channel: ${notification.title}`,
-            );
-            break;
-          case EventType.TRIGGER_NOTIFICATION_CREATED:
-            console.log(
-              `Foreground User triggered notification created: ${notification.title}`,
-            );
-            break;
-          case EventType.FG_ALREADY_EXIST:
-            console.log(`Foreground User already exist: ${notification.title}`);
-            break;
-          default:
-            console.log('Foreground default boy');
-            break;
-        }
-      },
-    );
-
-    return () => {
-      unsubscribeFCM();
-      unsubscribeEvent();
-      if (ws.current) {
-        ws.current.close();
-      }
-    };
+    return () => unSubscribeMessage();
   }, []);
+
+  const subscribeToTopic = async () => {
+    try {
+      await messaging().subscribeToTopic('topicA');
+      console.log('Success subscribe to topic');
+    } catch (error) {
+      console.error('Failed to subscribe to topic:', error);
+    }
+  };
 
   const checkHasPermission = async () => {
     const settings = await notifee.getNotificationSettings();
@@ -99,13 +48,6 @@ function App(): React.JSX.Element {
     } else {
       console.log('Notification permissions are not authorized');
       setHasPermission(false);
-    }
-  };
-
-  const checkToken = async () => {
-    const fcmToken = await messaging().getToken();
-    if (fcmToken) {
-      console.log(fcmToken);
     }
   };
 
@@ -120,81 +62,14 @@ function App(): React.JSX.Element {
     }
   };
 
-  const connectWebSocket = () => {
-    if (ws.current) {
-      ws.current.close();
-    }
-
-    ws.current = new WebSocket('ws://192.168.20.27:8180/');
-
-    ws.current.onopen = () => {
-      setWsConnected(true);
-      console.log('WebSocket Connected');
-    };
-
-    ws.current.onclose = (e: any) => {
-      setWsConnected(false);
-      console.log(`WebSocket Closed: ${e.reason}`);
-    };
-
-    ws.current.onerror = (e: Event) => {
-      setWsConnected(false);
-      console.log('WebSocket Error: ', e);
-    };
-
-    ws.current.onmessage = e => {
-      try {
-        const data = JSON.parse(e.data);
-        counter.current = counter.current + 1;
-        if (data.jumlah_data !== undefined) {
-          showNotification(`${data.jumlah_data}`, counter.current);
-        }
-      } catch (error: any) {
-        console.error('Failed to parse message: ', error);
-      }
-    };
-  };
-
-  const disconnectWebSocket = () => {
-    if (ws.current) {
-      ws.current.close();
-      ws.current = null;
-    }
-    setWsConnected(false);
-    console.log('WebSocket Disconnected');
-  };
-
-  const showNotification = async (message: string, newcounter: number) => {
-    const channelId = await notifee.createChannel({
-      id: 'ws_channel',
-      name: 'ws channel',
-    });
-
-    await notifee.displayNotification({
-      title: `Notifikasi ke - ${newcounter}`,
-      body: `MESSAGE SOCKET : ${message}`,
-      android: {
-        channelId,
-      },
-    });
-  };
-
   return (
     <View style={styles.background}>
       {!hasPermission ? (
         <TouchableOpacity style={styles.button} onPress={requestPermission}>
           <Text style={styles.text}>Izinkan Notifikasi</Text>
         </TouchableOpacity>
-      ) : isWsConnected ? (
-        <TouchableOpacity
-          style={[styles.button, styles.disconnectButton]}
-          onPress={disconnectWebSocket}>
-          <Text style={styles.text}>Disconnect</Text>
-        </TouchableOpacity>
       ) : (
-        <TouchableOpacity style={styles.button} onPress={connectWebSocket}>
-          <Text style={styles.text}>Connect</Text>
-        </TouchableOpacity>
+        <Text>Waching</Text>
       )}
     </View>
   );

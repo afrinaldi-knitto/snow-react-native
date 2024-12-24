@@ -27,7 +27,20 @@ function App(): React.JSX.Element {
       }
     });
 
-    return () => unSubscribeMessage();
+    const unsubscribeEvent = notifee.onForegroundEvent(
+      async ({type, detail}) => {
+        console.log(
+          `Received foreground event with type : ${type} & detail : ${JSON.stringify(
+            detail,
+          )}`,
+        );
+      },
+    );
+
+    return () => {
+      unSubscribeMessage();
+      unsubscribeEvent();
+    };
   }, []);
 
   const subscribeToTopic = async () => {
@@ -69,7 +82,7 @@ function App(): React.JSX.Element {
           <Text style={styles.text}>Izinkan Notifikasi</Text>
         </TouchableOpacity>
       ) : (
-        <Text style={{color: '#fff'}}>Waching</Text>
+        <Text style={styles.text}>Waching</Text>
       )}
     </View>
   );

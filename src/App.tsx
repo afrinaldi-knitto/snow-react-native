@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
 import messaging from '@react-native-firebase/messaging';
-import notifee, {AuthorizationStatus} from '@notifee/react-native';
+import notifee, {AuthorizationStatus, EventType} from '@notifee/react-native';
 
 function App(): React.JSX.Element {
   const [hasPermission, setHasPermission] = useState<boolean>(false);
@@ -13,7 +13,7 @@ function App(): React.JSX.Element {
   useEffect(() => {
     checkToken();
     checkHasPermission();
-    const unsubscribe = messaging().onMessage(async remoteMessage => {
+    const unsubscribeFCM = messaging().onMessage(async remoteMessage => {
       if (remoteMessage.notification?.title === undefined) {
         return;
       }
@@ -21,8 +21,69 @@ function App(): React.JSX.Element {
       showNotification(remoteMessage.notification?.title, counter.current);
     });
 
+    const unsubscribeEvent = notifee.onForegroundEvent(
+      async ({type, detail}) => {
+        const {notification} = detail;
+
+        if (notification === undefined) {
+          return;
+        }
+
+        switch (type) {
+          case EventType.UNKNOWN:
+            console.log(`Foreground Unknown event: ${notification}`);
+            break;
+          case EventType.PRESS:
+            console.log(
+              `Foreground User pressed notification: ${notification}`,
+            );
+            break;
+          case EventType.DISMISSED:
+            console.log(
+              `Foreground User dismissed notification: ${notification}`,
+            );
+            break;
+          case EventType.ACTION_PRESS:
+            console.log(`Foreground User pressed action: ${notification}`);
+            break;
+          case EventType.DELIVERED:
+            console.log(
+              `Foreground User delivered notification: ${notification.title}`,
+            );
+            break;
+          case EventType.APP_BLOCKED:
+            console.log(
+              `Foreground User blocked notification: ${notification.title}`,
+            );
+            break;
+          case EventType.CHANNEL_GROUP_BLOCKED:
+            console.log(
+              `Foreground User blocked channel group: ${notification.title}`,
+            );
+            break;
+          case EventType.CHANNEL_BLOCKED:
+            console.log(
+              `Foreground User blocked channel: ${notification.title}`,
+            );
+            break;
+          case EventType.TRIGGER_NOTIFICATION_CREATED:
+            console.log(
+              `Foreground User triggered notification created: ${notification.title}`,
+            );
+            break;
+          case EventType.FG_ALREADY_EXIST:
+            console.log(`Foreground User already exist: ${notification.title}`);
+            break;
+          default:
+            console.log('Foreground default boy');
+            break;
+        }
+      },
+    );
+
     return () => {
-      unsubscribe;
+      unsubscribeFCM();
+      unsubscribeEvent();
       if (ws.current) {
         ws.current.close();
       }

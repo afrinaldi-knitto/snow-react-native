@@ -1,51 +1,13 @@
 {
   "project_info": {
-    "project_number": "211040244902",
-    "project_id": "notification-app-62d0b",
-    "storage_bucket": "notification-app-62d0b.firebasestorage.app"
+    "project_number": "499482011512",
+    "project_id": "notification-kat",
+    "storage_bucket": "notification-kat.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:211040244902:android:4e41acf6e08946ea315067",
-        "android_client_info": {
-          "package_name": "com.example.pushnotification"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyD5Ofolb8a0dvJitZnMPKZFGQJBp5NkB1Y"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:211040244902:android:4440c534a7aa0cea315067",
-        "android_client_info": {
-          "package_name": "com.nalldev.snow"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyD5Ofolb8a0dvJitZnMPKZFGQJBp5NkB1Y"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:211040244902:android:40b647a14c8d6835315067",
+        "mobilesdk_app_id": "1:499482011512:android:d245a6aa3655379a1a4a8d",
         "android_client_info": {
           "package_name": "com.notificationwearos"
         }
@@ -53,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyD5Ofolb8a0dvJitZnMPKZFGQJBp5NkB1Y"
+          "current_key": "AIzaSyDmcLhAts0UElV3W5rHfDEiWk2XzJ8i0jQ"
         }
       ],
       "services": {
